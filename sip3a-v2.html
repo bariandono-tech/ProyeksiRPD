@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>SiP3A — Proyeksi Penyerapan Anggaran</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{
+  --bg:#000;--surface:#1c1c1e;--surface2:#2c2c2e;--surface3:#3a3a3c;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --text:#fff;--text2:#ebebf5cc;--muted:#8e8e93;
+  --accent:#0a84ff;--green:#30d158;--yellow:#ffd60a;--red:#ff375f;--orange:#ffb340;--purple:#bf5af2;
+  --font:'Inter',-apple-system,sans-serif;--mono:ui-monospace,'SF Mono',monospace;
+  --sidebar-w:220px;--header-h:54px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+}
+[data-theme="light"]{
+  --bg:#f2f2f7;--surface:#fff;--surface2:#f2f2f7;--surface3:#e5e5ea;
+  --border:rgba(60,60,67,.1);--border2:rgba(60,60,67,.2);
+  --text:#000;--text2:#3c3c4399;--muted:#8e8e93;--accent:#007aff;--green:#34c759;
+  --yellow:#ff9500;--red:#ff3b30;--orange:#ff9500;--purple:#af52de;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;
+  display:flex;flex-direction:column;
+  padding-top:var(--safe-top);
+  transition:background .3s,color .3s;
+}
+
+/* HEADER */
+header{
+  background:var(--surface);border-bottom:.5px solid var(--border2);
+  padding:0 14px 0 0;height:var(--header-h);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  position:relative;z-index:100;
+}
+.hl{display:flex;align-items:center}
+.hamburger{
+  width:var(--header-h);height:var(--header-h);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  cursor:pointer;flex-shrink:0;background:transparent;border:none;color:var(--text);
+}
+.hamburger span{display:block;width:18px;height:1.5px;background:var(--text);border-radius:2px;transition:.25s;transform-origin:center}
+.hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+.logo{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--accent);font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+header h1{font-size:13px;font-weight:600;margin-left:10px}
+header h1 .sub{color:var(--muted);font-weight:400;font-size:10px;display:block;margin-top:1px}
+.hr{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn{padding:6px 13px;border:.5px solid var(--border2);border-radius:8px;cursor:pointer;font-size:12px;background:var(--surface2);color:var(--text);transition:.2s;font-family:var(--font);font-weight:500;white-space:nowrap;-webkit-appearance:none;appearance:none}
+.btn:hover{background:var(--surface3)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{opacity:.9}
+.btn.sm{padding:5px 10px;font-size:11px}
+.btn.icon{padding:6px 9px;font-size:14px}
+
+/* APP BODY */
+.app-body{flex:1;display:flex;overflow:hidden;position:relative}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--surface);border-right:.5px solid var(--border2);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:width .28s cubic-bezier(.4,0,.2,1),transform .28s cubic-bezier(.4,0,.2,1);
+  z-index:50;
+}
+.sidebar.collapsed{width:0}
+.sidebar-overlay{
+  display:none;position:absolute;inset:0;
+  background:rgba(0,0,0,.5);z-index:40;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+.sidebar-section{padding:12px 12px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;margin:1px 6px;
+  cursor:pointer;transition:.15s;font-size:13px;font-weight:500;color:var(--text2);
+  position:relative;white-space:nowrap;
+}
+.nav-item:hover{background:var(--surface2)}
+.nav-item.active{background:rgba(10,132,255,.15);color:var(--accent)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--accent);border-radius:2px}
+.nav-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;background:rgba(255,179,64,.15);color:var(--orange)}
+.nav-badge.saved{background:rgba(48,209,88,.15);color:var(--green)}
+.sidebar-sep{height:.5px;background:var(--border);margin:6px 12px}
+.sidebar-info{padding:8px 10px;background:var(--surface2);border-radius:8px;margin:3px 0}
+.sidebar-info .si-label{font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:.06em}
+.sidebar-info .si-val{font-size:12px;font-weight:600;margin-top:2px;font-family:var(--mono)}
+.sidebar-bottom{margin-top:auto;padding:8px 6px;padding-bottom:calc(8px + var(--safe-bottom))}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* TOOLBAR */
+.toolbar{
+  display:flex;align-items:center;gap:8px;padding:7px 14px;
+  border-bottom:.5px solid var(--border);background:var(--surface);
+  flex-wrap:nowrap;flex-shrink:0;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.toolbar::-webkit-scrollbar{display:none}
+.toolbar label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;white-space:nowrap;flex-shrink:0}
+.sel-wrap{position:relative;display:flex;align-items:center;flex-shrink:0}
+.sel-wrap::after{content:'▾';position:absolute;right:7px;font-size:9px;color:var(--muted);pointer-events:none}
+select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:6px 22px 6px 10px;border-radius:8px;font-family:var(--mono);font-size:12px;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+input.search{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:8px;font-family:var(--font);font-size:12px;outline:none;min-width:130px;-webkit-appearance:none;appearance:none}
+input.search:focus{border-color:var(--accent)}
+.toolbar-sep{width:.5px;height:20px;background:var(--border2);flex-shrink:0}
+
+/* SCROLL */
+.scroll{flex:1;overflow:auto;padding:14px 14px 20px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+
+/* VIEW PANELS */
+.view-panel{display:none}
+.view-panel.active{display:block}
+
+/* REKAP */
+.rekap-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:.5px solid var(--border2)}
+.rekap-title{font-size:15px;font-weight:700}
+.rekap-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.rekap-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.rcard{background:var(--surface);border:.5px solid var(--border2);border-radius:12px;overflow:hidden}
+.rcard .rch{padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);border-bottom:.5px solid var(--border);background:var(--surface2)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px;white-space:nowrap}
+.rtab th,.rtab td{padding:7px 10px;border-bottom:.5px solid var(--border);text-align:right}
+.rtab th{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;background:var(--surface)}
+.rtab th.l,.rtab td.l{text-align:left}
+.rtab tr:last-child td{border-bottom:none}
+.rtab .grow td{background:var(--surface3);font-weight:700;font-family:var(--mono)}
+.rtab-prog-row td{background:rgba(10,132,255,.08);font-weight:700;border-top:.5px solid var(--border2)}
+.rtab-prog-row td .mono{font-family:var(--mono)}
+.rtab-ro-row td{background:var(--surface);font-weight:400}
+.rtab-ro-row:hover td{background:var(--surface2)}
+
+/* GRID PENGISIAN */
+.gridwrap{background:var(--surface);border:.5px solid var(--border2);border-radius:12px;overflow:auto;-webkit-overflow-scrolling:touch}
+.itab th,.itab td{padding:6px 8px;border-bottom:.5px solid var(--border);border-right:.5px solid var(--border)}
+.itab th{background:var(--surface2);color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.02em;position:sticky;top:0;z-index:20;text-align:right;white-space:nowrap}
+.itab th.l,.itab td.l{text-align:left}
+.itab td{text-align:right}
+.itab td.l{text-align:left;white-space:normal}
+.colitem{min-width:200px;max-width:200px}
+.colur{min-width:140px;max-width:140px;color:var(--text2);font-size:11px}
+.colkomp{min-width:110px;max-width:110px;color:var(--muted);font-size:11px}
+.rohead td{background:var(--surface2);font-weight:600;color:var(--accent)}
+.rocode{font-family:var(--mono);font-size:11px}
+.subhead td{background:rgba(10,132,255,.05);font-weight:600;font-size:11px;color:var(--text2)}
+input.ket-sub{background:transparent;border:none;border-bottom:1px dashed var(--border2);color:var(--text);font-size:11px;font-family:var(--font);font-weight:400;padding:2px 4px;outline:none;min-width:220px;width:45%}
+input.ket-sub::placeholder{color:var(--muted);font-style:italic}
+input.ket-sub:focus{border-bottom-color:var(--accent)}
+.itemname{font-weight:500;font-size:12px}
+.itemcode{font-family:var(--mono);font-size:10px;color:var(--muted)}
+input.cell{width:84px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 6px;border-radius:5px;font-family:var(--mono);font-size:11px;text-align:right;outline:none;-webkit-appearance:none;appearance:none}
+input.cell:focus{border-color:var(--accent);background:var(--surface3)}
+input.cell.over{border-color:var(--red);background:rgba(255,55,95,.12)}
+input.ket{width:160px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;outline:none;text-align:left;font-family:var(--font);-webkit-appearance:none;appearance:none}
+input.ket:focus{border-color:var(--accent)}
+.mono{font-family:var(--mono)}
+.pos{color:var(--green)}.neg{color:var(--red)}.warn{color:var(--orange)}.dim{color:var(--muted)}
+.jbtag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600}
+.jb51{background:rgba(10,132,255,.15);color:var(--accent)}
+.jb52{background:rgba(48,209,88,.15);color:var(--green)}
+.jb53{background:rgba(191,90,242,.15);color:var(--purple)}
+.subtotal td{background:rgba(10,132,255,.07);font-weight:600;font-family:var(--mono)}
+.grand td{background:var(--surface3);font-weight:700;font-family:var(--mono);position:sticky;bottom:0;z-index:18}
+
+/* FOOTER */
+.footer{padding:9px 14px;border-top:.5px solid var(--border2);background:var(--surface);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding-bottom:calc(9px + var(--safe-bottom))}
+.footer .info{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.footer .info b{color:var(--text)}
+.footer-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(70px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(30px);background:var(--green);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:500;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* MOBILE: bottom nav */
+@media(max-width:700px){
+  .sidebar{position:absolute;left:0;top:0;bottom:0;width:var(--sidebar-w) !important;transform:translateX(-100%);box-shadow:4px 0 24px rgba(0,0,0,.45)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay{display:block}
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:.5px solid var(--border2);padding:6px 0 calc(6px + var(--safe-bottom));z-index:200}
+  .mobile-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;color:var(--muted);transition:.15s;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+  .mobile-nav-item.active{color:var(--accent)}
+  .mobile-nav-item .mn-icon{font-size:20px;line-height:1}
+  body{padding-bottom:calc(60px + var(--safe-bottom))}
+  .footer{display:none}
+  header h1 .sub{display:none}
+  .toolbar label{display:none}
+}
+@media(min-width:701px){
+  .mobile-nav{display:none}
+  .sidebar-overlay{display:none !important}
+}
+
+
+.empty-cell{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hl">
+    <button class="hamburger" id="hambtn" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="logo">SiP</div>
+    <h1>SiP3A — Proyeksi Anggaran <span class="sub">Rudenim Pontianak · TA 2026</span></h1>
+  </div>
+  <div class="hr">
+    <button class="btn icon" onclick="toggleTheme()">◐</button>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div style="padding:14px 12px 8px">
+      <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em">Operator</div>
+      <div style="font-size:12px;font-weight:600;margin-top:3px">Bag. Perencanaan</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:1px;font-family:var(--mono)">Rudenim Pontianak</div>
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <div class="sidebar-section">Menu Utama</div>
+
+    <div class="nav-item active" id="nav-pengisian" onclick="switchView('pengisian')">
+      <span class="nav-icon">✏️</span>
+      <span>Pengisian</span>
+      <span class="nav-badge" id="badge-tw">TW II</span>
+    </div>
+
+    <div class="nav-item" id="nav-rekap" onclick="switchView('rekap')">
+      <span class="nav-icon">📊</span>
+      <span>Rekapitulasi</span>
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <div class="sidebar-section">Filter Aktif</div>
+    <div style="padding:4px 8px">
+      <div class="sidebar-info">
+        <div class="si-label">Triwulan</div>
+        <div class="si-val" id="si-tw">TW II · Apr–Jun</div>
+      </div>
+      <div class="sidebar-info" style="margin-top:6px">
+        <div class="si-label">Jenis Belanja</div>
+        <div class="si-val" id="si-jb">Semua</div>
+      </div>
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <div class="sidebar-section">Aksi</div>
+    <div class="nav-item" onclick="saveAll()">
+      <span class="nav-icon">💾</span>
+      <span>Simpan Proyeksi</span>
+      <span class="nav-badge" id="status-badge">belum</span>
+    </div>
+    <div class="nav-item" onclick="exportCSV()">
+      <span class="nav-icon">⤓</span>
+      <span>Ekspor CSV</span>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div style="text-align:center;font-size:10px;color:var(--muted)">SiP3A v2.0 · Ditjen Imigrasi</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="toolbar">
+      <label>Tahun</label>
+      <div class="sel-wrap"><select><option>2026</option></select></div>
+      <div class="toolbar-sep"></div>
+      <label>Triwulan</label>
+      <div class="sel-wrap">
+        <select id="ftw" onchange="onFilterChange()">
+          <option value="1">TW I (Jan–Mar)</option>
+          <option value="2" selected>TW II (Apr–Jun)</option>
+          <option value="3">TW III (Jul–Sep)</option>
+          <option value="4">TW IV (Okt–Des)</option>
+        </select>
+      </div>
+      <div class="toolbar-sep"></div>
+      <label>Belanja</label>
+      <div class="sel-wrap">
+        <select id="fjb" onchange="onFilterChange()">
+          <option value="">Semua</option>
+          <option value="51">51 Pegawai</option>
+          <option value="52">52 Barang</option>
+          <option value="53">53 Modal</option>
+        </select>
+      </div>
+      <input class="search" id="fq" placeholder="🔍 Cari item..." oninput="onFilterChange()">
+    </div>
+
+    <div class="scroll" id="scroll-area">
+
+      <!-- VIEW PENGISIAN -->
+      <div class="view-panel active" id="view-pengisian">
+        <div class="gridwrap"><table class="itab" id="grid"></table></div>
+      </div>
+
+      <!-- VIEW REKAP -->
+      <div class="view-panel" id="view-rekap">
+        <div class="rekap-hdr">
+          <div>
+            <div class="rekap-title" id="rekap-title">Rekapitulasi Proyeksi</div>
+            <div class="rekap-sub" id="rekap-sub">—</div>
+          </div>
+          <button class="btn sm" onclick="switchView('pengisian')">← Pengisian</button>
+        </div>
+        <div id="rekap-content"></div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div class="info" id="finfo">—</div>
+      <div class="footer-actions">
+        <button class="btn sm" onclick="exportCSV()">⤓ CSV</button>
+        <button class="btn sm primary" onclick="saveAll()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Mobile bottom nav -->
+<div class="mobile-nav">
+  <div class="mobile-nav-item active" id="mnav-pengisian" onclick="switchView('pengisian')">
+    <span class="mn-icon">✏️</span>Pengisian
+  </div>
+  <div class="mobile-nav-item" id="mnav-rekap" onclick="switchView('rekap')">
+    <span class="mn-icon">📊</span>Rekap
+  </div>
+  <div class="mobile-nav-item" onclick="saveAll()">
+    <span class="mn-icon">💾</span>Simpan
+  </div>
+  <div class="mobile-nav-item" onclick="exportCSV()">
+    <span class="mn-icon">⤓</span>CSV
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BULAN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const ROMAN=['I','II','III','IV'];
+const TW_LABEL=['Jan–Mar','Apr–Jun','Jul–Sep','Okt–Des'];
+const JB_NAMA={'51':'Belanja Pegawai','52':'Belanja Barang','53':'Belanja Modal','57':'Belanja Bansos'};
+const jbOf=akun=>String(akun).slice(0,2);
+
+let DATA=[
+ {ro:'WA.6163',roName:'Dukungan Manajemen dan Teknis Lainnya',program:'WA',programName:'Dukungan Manajemen dan Teknis Lainnya',subOut:'994 Layanan Perkantoran',komp:'001.0A Tanpa Sub Komponen',akun:'511111',ur:'Belanja Gaji Pokok PNS',item:'000001. Belanja Gaji Pokok PNS',pagu:4800000000,real:1900000000,proj:[400000000,400000000,400000000,400000000,400000000,400000000,400000000,400000000,400000000,400000000,400000000,400000000],ket:''},
+ {ro:'WA.6163',roName:'Dukungan Manajemen dan Teknis Lainnya',program:'WA',programName:'Dukungan Manajemen dan Teknis Lainnya',subOut:'994 Layanan Perkantoran',komp:'002.0D Pemeliharaan Gedung',akun:'523111',ur:'Belanja Pemeliharaan Gedung dan Bangunan',item:'000122. Pemeliharaan Gedung/Bangunan Kantor',pagu:121500000,real:26008000,proj:[0,0,10000000,20000000,20000000,20000000,15000000,10000000,0,0,0,0],ket:'Pemeliharaan rutin'},
+ {ro:'WA.6163',roName:'Dukungan Manajemen dan Teknis Lainnya',program:'WA',programName:'Dukungan Manajemen dan Teknis Lainnya',subOut:'994 Layanan Perkantoran',komp:'002.0E Pemeliharaan Sarana',akun:'523121',ur:'Belanja Pemeliharaan Peralatan dan Mesin',item:'000127. Pemeliharaan Komputer',pagu:24280000,real:129000,proj:[0,0,2000000,2000000,2000000,2000000,2000000,2000000,2000000,2000000,0,0],ket:''},
+ {ro:'BF.6161',roName:'Penyelenggaraan Fungsi Keimigrasian',program:'BF',programName:'Penyelenggaraan Fungsi Keimigrasian',subOut:'052 Koordinasi Pelaksanaan Anggaran',komp:'052.0A Tanpa Sub Komponen',akun:'524111',ur:'Belanja Perjalanan Dinas Biasa',item:'000213. Penginapan',pagu:13432000,real:0,proj:[0,0,0,14881128,0,0,0,0,0,0,0,0],ket:''},
+ {ro:'BF.6161',roName:'Penyelenggaraan Fungsi Keimigrasian',program:'BF',programName:'Penyelenggaraan Fungsi Keimigrasian',subOut:'052 Koordinasi Pelaksanaan Anggaran',komp:'052.0A Tanpa Sub Komponen',akun:'524111',ur:'Belanja Perjalanan Dinas Biasa',item:'000215. Uang Harian',pagu:13110000,real:7980000,proj:[0,0,0,7950000,0,0,0,0,0,0,0,0],ket:''},
+ {ro:'BF.6161',roName:'Penyelenggaraan Fungsi Keimigrasian',program:'BF',programName:'Penyelenggaraan Fungsi Keimigrasian',subOut:'052 Koordinasi Pelaksanaan Anggaran',komp:'052.0A Tanpa Sub Komponen',akun:'524111',ur:'Belanja Perjalanan Dinas Biasa',item:'000216. Penginapan',pagu:12190000,real:0,proj:[0,0,0,1452520,0,0,0,0,0,0,0,0],ket:''},
+ {ro:'BF.6161',roName:'Penyelenggaraan Fungsi Keimigrasian',program:'BF',programName:'Penyelenggaraan Fungsi Keimigrasian',subOut:'051 Pengelolaan Keuangan dan Perbendaharaan',komp:'051.0A Tanpa Sub Komponen',akun:'524111',ur:'Belanja Perjalanan Dinas Biasa',item:'000229. Tiket PP',pagu:4657000,real:0,proj:[0,0,0,3040000,0,0,0,0,0,0,0,0],ket:''},
+ {ro:'BF.6161',roName:'Penyelenggaraan Fungsi Keimigrasian',program:'BF',programName:'Penyelenggaraan Fungsi Keimigrasian',subOut:'051 Pengelolaan Keuangan dan Perbendaharaan',komp:'051.0A Tanpa Sub Komponen',akun:'524111',ur:'Belanja Perjalanan Dinas Biasa',item:'000231. Uang Harian',pagu:2743000,real:0,proj:[0,0,0,0,0,0,0,0,0,0,0,0],ket:''},
+ {ro:'EBB.951',roName:'Layanan Sarana Internal',program:'WA',programName:'Dukungan Manajemen dan Teknis Lainnya',subOut:'951 Layanan Sarana Internal',komp:'051.0A Pengadaan',akun:'532111',ur:'Belanja Modal Peralatan dan Mesin',item:'000301. Pengadaan Server',pagu:509712000,real:0,proj:[0,0,0,436192260,0,0,0,73519740,0,0,0,0],ket:'Lelang Q2, fisik Q3'},
+];
+
+const fmt=n=>Math.round(n).toLocaleString('id-ID');
+const fmtS=n=>n>=1e9?(n/1e9).toFixed(2)+' M':n>=1e6?(n/1e6).toFixed(1)+' jt':fmt(n);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+let dirty=false,subKet={},currentView='pengisian',sidebarOpen=true;
+
+function monthsForTW(tw){const s=(parseInt(tw)-1)*3;return[s,s+1,s+2];}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+/* SIDEBAR */
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar'),hb=document.getElementById('hambtn');
+  const isMobile=window.innerWidth<=700;
+  if(isMobile){
+    const open=sb.classList.toggle('open');
+    hb.classList.toggle('open',open);
+  } else {
+    sidebarOpen=!sidebarOpen;
+    sb.classList.toggle('collapsed',!sidebarOpen);
+  }
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('hambtn').classList.remove('open');
+}
+
+/* VIEW */
+function switchView(v){
+  currentView=v;
+  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('[id^="nav-"]').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('[id^="mnav-"]').forEach(n=>n.classList.remove('active'));
+  const ni=document.getElementById('nav-'+v);if(ni)ni.classList.add('active');
+  const mn=document.getElementById('mnav-'+v);if(mn)mn.classList.add('active');
+  document.getElementById('scroll-area').scrollTop=0;
+  if(window.innerWidth<=700)closeSidebar();
+  if(v==='rekap')renderRekap();else render();
+}
+
+/* FILTER */
+function onFilterChange(){
+  updateSidebarInfo();
+  if(currentView==='rekap')renderRekap();else render();
+}
+function updateSidebarInfo(){
+  const tw=document.getElementById('ftw').value;
+  const jb=document.getElementById('fjb').value;
+  document.getElementById('si-tw').textContent='TW '+ROMAN[tw-1]+' · '+TW_LABEL[tw-1];
+  document.getElementById('badge-tw').textContent='TW '+ROMAN[tw-1];
+  document.getElementById('si-jb').textContent=jb?(jb+' '+(JB_NAMA[jb]||'').replace('Belanja ','')||jb):'Semua';
+}
+
+/* REKAP */
+function renderRekap(){
+  const tw=parseInt(document.getElementById('ftw').value);
+  const MS=monthsForTW(tw);
+  const mlabels=MS.map(m=>BULAN[m]);
+  document.getElementById('rekap-title').textContent='Rekapitulasi Proyeksi — TW '+ROMAN[tw-1];
+  document.getElementById('rekap-sub').textContent='Periode: '+mlabels.join(' / ')+' 2026 · Rudenim Pontianak';
+  function agg(keyFn){
+    const map={};
+    DATA.forEach(d=>{const k=keyFn(d);if(!map[k])map[k]={pagu:0,real:0,proj:MS.map(()=>0),label:k};
+      map[k].pagu+=d.pagu;map[k].real+=d.real;MS.forEach((m,i)=>map[k].proj[i]+=d.proj[m]);});
+    return map;
+  }
+  const byJB=agg(d=>jbOf(d.akun));
+  // agregasi per RO
+  const byRO=agg(d=>d.ro);
+  const roMeta={};DATA.forEach(d=>{roMeta[d.ro]={name:d.roName,program:d.program||d.ro.split('.')[0],programName:d.programName||d.roName};});
+  // agregasi per Program (prefix sebelum titik)
+  const byProg={};
+  DATA.forEach(d=>{
+    const pk=d.program||d.ro.split('.')[0];
+    const pn=d.programName||d.roName;
+    if(!byProg[pk])byProg[pk]={pagu:0,real:0,proj:MS.map(()=>0),name:pn,ros:{}};
+    byProg[pk].pagu+=d.pagu;byProg[pk].real+=d.real;
+    MS.forEach((m,i)=>byProg[pk].proj[i]+=d.proj[m]);
+    if(!byProg[pk].ros[d.ro])byProg[pk].ros[d.ro]={pagu:0,real:0,proj:MS.map(()=>0),name:d.roName};
+    byProg[pk].ros[d.ro].pagu+=d.pagu;byProg[pk].ros[d.ro].real+=d.real;
+    MS.forEach((m,i)=>byProg[pk].ros[d.ro].proj[i]+=d.proj[m]);
+  });
+
+  // ── Tabel Jenis Belanja ──
+  function tableJB(map){
+    let h=`<table class="rtab"><thead><tr><th class="l" style="min-width:160px">Jenis Belanja</th><th>Pagu</th><th>Realisasi</th><th>Sisa</th>`;
+    mlabels.forEach(l=>h+=`<th>${l}</th>`);
+    h+=`<th>Total TW</th><th>%Proy</th></tr></thead><tbody>`;
+    let tP=0,tR=0,tProj=MS.map(()=>0);
+    Object.values(map).sort((a,b)=>b.pagu-a.pagu).forEach(r=>{
+      const sisa=r.pagu-r.real,totTW=sum(r.proj);
+      const pct=r.pagu>0?((r.real+totTW)/r.pagu*100):0;
+      tP+=r.pagu;tR+=r.real;r.proj.forEach((v,i)=>tProj[i]+=v);
+      h+=`<tr><td class="l">${JB_NAMA[r.label]||r.label}</td><td class="mono">${fmtS(r.pagu)}</td><td class="mono">${fmtS(r.real)}</td><td class="mono ${sisa<0?'neg':''}">${fmtS(sisa)}</td>`;
+      r.proj.forEach(v=>h+=`<td class="mono ${v?'':'dim'}">${v?fmtS(v):'–'}</td>`);
+      h+=`<td class="mono">${fmtS(totTW)}</td><td class="mono">${pct.toFixed(0)}%</td></tr>`;
+    });
+    const tT=sum(tProj);
+    h+=`<tr class="grow"><td class="l">Grand Total</td><td>${fmtS(tP)}</td><td>${fmtS(tR)}</td><td>${fmtS(tP-tR)}</td>`;
+    tProj.forEach(v=>h+=`<td>${fmtS(v)}</td>`);
+    h+=`<td>${fmtS(tT)}</td><td>${tP>0?((tR+tT)/tP*100).toFixed(0):0}%</td></tr></tbody></table>`;
+    return h;
+  }
+
+  // ── Tabel Program → RO (hierarki) ──
+  function tableProgRO(){
+    const nCols=5+MS.length+2; // Program/RO, Pagu, Real, Sisa, bulan×n, TotalTW, %
+    let h=`<table class="rtab"><thead><tr>
+      <th class="l" style="min-width:280px">Program / RO</th>
+      <th>Pagu</th><th>Realisasi</th><th>Sisa</th>`;
+    mlabels.forEach(l=>h+=`<th>${l}</th>`);
+    h+=`<th>Total TW</th><th>%Proy</th></tr></thead><tbody>`;
+    let gP=0,gR=0,gProj=MS.map(()=>0);
+    Object.keys(byProg).sort().forEach(pk=>{
+      const pg=byProg[pk];
+      const pSisa=pg.pagu-pg.real,pTW=sum(pg.proj),pPct=pg.pagu>0?((pg.real+pTW)/pg.pagu*100):0;
+      gP+=pg.pagu;gR+=pg.real;pg.proj.forEach((v,i)=>gProj[i]+=v);
+      // baris Program (header grup)
+      h+=`<tr class="rtab-prog-row">
+        <td class="l" style="white-space:normal">
+          <div style="display:flex;align-items:flex-start;gap:6px">
+            <span style="margin-top:1px;color:var(--muted);font-size:11px;flex-shrink:0">▾</span>
+            <div><span style="font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700">${pk}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text);margin-left:6px">${pg.name}</span></div>
+          </div>
+        </td>
+        <td class="mono">${fmtS(pg.pagu)}</td><td class="mono">${fmtS(pg.real)}</td>
+        <td class="mono ${pSisa<0?'neg':''}">${fmtS(pSisa)}</td>`;
+      pg.proj.forEach(v=>h+=`<td class="mono ${v?'':'dim'}">${v?fmtS(v):'–'}</td>`);
+      h+=`<td class="mono">${fmtS(pTW)}</td><td class="mono">${pPct.toFixed(0)}%</td></tr>`;
+      // baris RO (indent)
+      Object.keys(pg.ros).sort().forEach(ro=>{
+        const r=pg.ros[ro];
+        const rSisa=r.pagu-r.real,rTW=sum(r.proj),rPct=r.pagu>0?((r.real+rTW)/r.pagu*100):0;
+        h+=`<tr class="rtab-ro-row">
+          <td class="l" style="white-space:normal;padding-left:28px">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--accent)">${ro}</span>
+            <span style="font-size:11px;color:var(--text2);margin-left:6px">${r.name}</span>
+          </td>
+          <td class="mono dim">${fmtS(r.pagu)}</td><td class="mono dim">${fmtS(r.real)}</td>
+          <td class="mono ${rSisa<0?'neg':'dim'}">${fmtS(rSisa)}</td>`;
+        r.proj.forEach(v=>h+=`<td class="mono ${v?'dim':'dim'}">${v?fmtS(v):'–'}</td>`);
+        h+=`<td class="mono dim">${fmtS(rTW)}</td><td class="mono dim">${rPct.toFixed(0)}%</td></tr>`;
+      });
+    });
+    const gT=sum(gProj);
+    h+=`<tr class="grow"><td class="l">Grand Total</td><td>${fmtS(gP)}</td><td>${fmtS(gR)}</td><td>${fmtS(gP-gR)}</td>`;
+    gProj.forEach(v=>h+=`<td>${fmtS(v)}</td>`);
+    h+=`<td>${fmtS(gT)}</td><td>${gP>0?((gR+gT)/gP*100).toFixed(0):0}%</td></tr></tbody></table>`;
+    return h;
+  }
+
+  document.getElementById('rekap-content').innerHTML=`<div class="rekap-grid">
+    <div class="rcard"><div class="rch">Per Jenis Belanja</div>${tableJB(byJB)}</div>
+    <div class="rcard"><div class="rch">Per Program / RO</div>${tableProgRO()}</div>
+  </div>`;
+}
+
+/* GRID PENGISIAN */
+function render(){
+  const jb=document.getElementById('fjb').value;
+  const tw=document.getElementById('ftw').value;
+  const q=(document.getElementById('fq').value||'').toLowerCase();
+  const MS=monthsForTW(tw);
+  const rows=DATA.map((d,i)=>({...d,_i:i}))
+    .filter(d=>!jb||jbOf(d.akun)===jb)
+    .filter(d=>!q||(d.item+d.ur+d.subOut+d.komp).toLowerCase().includes(q));
+  let h='<thead><tr><th class="l colitem">Sub Output · Item</th><th class="l colkomp">Komponen / Akun</th><th class="l colur">Uraian</th><th>Pagu</th><th>Realisasi</th><th>Sisa</th>';
+  MS.forEach(m=>h+=`<th>${BULAN[m]}</th>`);
+  h+='<th>Total TW</th><th class="l">Keterangan</th></tr></thead><tbody>';
+  const byRO={};rows.forEach(d=>{(byRO[d.ro]=byRO[d.ro]||[]).push(d)});
+  const nCol=6+MS.length+2;
+  if(rows.length===0){h+=`<tr><td colspan="${nCol}" class="empty-cell">Tidak ada item ditemukan.</td></tr>`;}
+  Object.keys(byRO).forEach(ro=>{
+    const g=byRO[ro];
+    h+=`<tr class="rohead"><td class="l" colspan="${nCol}"><span class="rocode">${ro}</span> · ${g[0].roName}</td></tr>`;
+    const bySub={};g.forEach(d=>{(bySub[d.subOut]=bySub[d.subOut]||[]).push(d)});
+    Object.keys(bySub).forEach(sub=>{
+      const items=bySub[sub];
+      const skey=ro+'|'+sub;
+      h+=`<tr class="subhead"><td class="l" colspan="${nCol}">↳ Sub Output ${sub} / <input class="ket-sub" placeholder="Keterangan sub output" value="${(subKet[skey]||'').replace(/"/g,'&quot;')}" onchange="setSubKet('${skey.replace(/'/g,"\\'")}',this.value)"></td></tr>`;
+      items.forEach(d=>{
+        const jbk=jbOf(d.akun);
+        const sisa=d.pagu-d.real;
+        const totTW=sum(MS.map(m=>d.proj[m]));
+        const over=(d.real+sum(d.proj))>d.pagu;
+        h+=`<tr><td class="l colitem"><div class="itemname">${d.item}</div><span class="jbtag jb${jbk}">${jbk} ${(JB_NAMA[jbk]||'').replace('Belanja ','')}</span></td>
+          <td class="l colkomp">${d.komp}<br><span class="itemcode">Akun ${d.akun}</span></td>
+          <td class="l colur">${d.ur}</td>
+          <td class="mono dim">${fmt(d.pagu)}</td>
+          <td class="mono dim">${fmt(d.real)}</td>
+          <td class="mono ${sisa<0?'neg':'pos'}">${fmt(sisa)}</td>`;
+        MS.forEach(m=>{
+          h+=`<td><input class="cell ${over?'over':''}" data-i="${d._i}" data-m="${m}" type="number" min="0" inputmode="numeric" value="${d.proj[m]}" onfocus="this.select()" oninput="setVal(${d._i},${m},this.value)"></td>`;
+        });
+        h+=`<td class="mono">${fmt(totTW)}</td><td class="l"><input class="ket" value="${(d.ket||'').replace(/"/g,'&quot;')}" placeholder="catatan..." onchange="setKet(${d._i},this.value)"></td></tr>`;
+      });
+      const sp=sum(items.map(d=>d.pagu)),sr=sum(items.map(d=>d.real));
+      h+=`<tr class="subtotal"><td class="l" colspan="3">Subtotal Sub Output ${sub.split(' ')[0]}</td>`;
+      h+=`<td>${fmt(sp)}</td><td>${fmt(sr)}</td><td class="${sp-sr<0?'neg':''}">${fmt(sp-sr)}</td>`;
+      MS.forEach(m=>h+=`<td>${fmt(sum(items.map(d=>d.proj[m])))}</td>`);
+      h+=`<td>${fmt(sum(items.map(d=>sum(MS.map(m=>d.proj[m])))))}</td><td></td></tr>`;
+    });
+  });
+  const gp=sum(rows.map(d=>d.pagu)),gr=sum(rows.map(d=>d.real));
+  h+=`<tr class="grand"><td class="l" colspan="3">TOTAL SELURUH</td><td>${fmt(gp)}</td><td>${fmt(gr)}</td><td class="${gp-gr<0?'neg':''}">${fmt(gp-gr)}</td>`;
+  MS.forEach(m=>h+=`<td>${fmt(sum(rows.map(d=>d.proj[m])))}</td>`);
+  const gTW=sum(rows.map(d=>sum(MS.map(m=>d.proj[m]))));
+  h+=`<td>${fmt(gTW)}</td><td></td></tr></tbody>`;
+  document.getElementById('grid').innerHTML=h;
+  const filled=rows.filter(d=>sum(MS.map(m=>d.proj[m]))>0).length;
+  document.getElementById('finfo').innerHTML=`<b>${rows.length}</b> item · <b>${filled}</b> terisi · Total TW <b>${fmtS(gTW)}</b> · Sisa <b>${fmtS(gp-gr)}</b> · ${dirty?'<span style="color:var(--orange)">belum disimpan</span>':'✓ tersimpan'}`;
+  const sb=document.getElementById('status-badge');
+  if(sb){sb.textContent=dirty?'belum':'✓';sb.className='nav-badge'+(dirty?'':' saved');}
+}
+
+function setVal(i,m,val){
+  DATA[i].proj[m]=parseFloat(val)||0;dirty=true;render();
+  const el=document.querySelector(`.cell[data-i="${i}"][data-m="${m}"]`);
+  if(el){el.focus();const L=el.value.length;try{el.setSelectionRange(L,L)}catch(e){}}
+}
+function setKet(i,v){DATA[i].ket=v;dirty=true;}
+function setSubKet(k,v){subKet[k]=v;dirty=true;}
+
+function saveAll(){
+  dirty=false;render();
+  const sb=document.getElementById('status-badge');
+  if(sb){sb.textContent='✓';sb.className='nav-badge saved';}
+  showToast('✓ Proyeksi berhasil disimpan');
+}
+
+function toggleTheme(){
+  const h=document.documentElement;
+  h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';
+  if(currentView==='rekap')renderRekap();else render();
+}
+
+function exportCSV(){
+  const tw=document.getElementById('ftw').value,MS=monthsForTW(tw);
+  const head=['RO','Sub Output','Komponen','Akun','Uraian','Item','Jenis Belanja','Pagu','Realisasi','Sisa',...MS.map(m=>BULAN[m]),'Total TW','Keterangan'];
+  const rows=[head];
+  DATA.forEach(d=>rows.push([d.ro,d.subOut,d.komp,d.akun,d.ur,d.item,JB_NAMA[jbOf(d.akun)],d.pagu,d.real,d.pagu-d.real,...MS.map(m=>d.proj[m]),sum(MS.map(m=>d.proj[m])),d.ket]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='proyeksi_TW'+tw+'_2026.csv';a.click();
+  showToast('⤓ File CSV diunduh');
+}
+
+updateSidebarInfo();
+render();
+</script>
+</body>
+</html>
